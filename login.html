@@ -1,52 +1,32 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>login</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Login Form</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body><header>
-        <div class="logo">
-            <div class="c"></div>
-            <div class="c">&<div id="x1F4DA"></div>
-            <h2 >E-BOOK LIBRARY</h2>
-            <div class="s"></div>
-        </div>
-        <nav>
-            <ul>
-                <li>
-                    <a href="index.html" class="active">Home</a>
 
-                </li>
-                <li>
-                    <a href="login.html">Login</a>
-                </li>
-                <li>
-                    <a href="register.html">register</a>
-                    </li>
-                    
-                        <li>
-                    <a href="cart.html">cart</a>
-                    </li>
-                    <li>
-                    <a href="catalog.html">catalog</a>
-                    </li>
-        </nav>
-        <header>
-            <div class="center">
-            
-            <form class="'form">
-            <h2>LOGIN</h2>
-            <input placeholder="email">
-            <input type="password" placeholder="password"
-            <button>login</button>
-            <p >NOT registered?<a href="register.html">click here</a></p>
-            </form>
-            </div>
+<body>
 
-            </header>
-        </header>
-        <footer>Srinithya-25wh1a05q5</footer>
-    </body>
+    <div class="login-container">
+        <h2>Login</h2>
+
+        <form id="loginform">
+
+            <label for="email">Username:</label>
+            <input type="text" id="email" placeholder="Enter username">
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" placeholder="Enter password">
+
+            <button type="submit">Login</button>
+
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
 </html>
