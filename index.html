@@ -3,60 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+            max-width: 700px;
+            margin:40px auto;
+            text-align: center;
+        }
+        input,button{
+            padding: 8px;
+            font-size: 16px;
+        }
+        message{
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <div class="c"></div>
-            <div class="c">&<div id="x1F4DA"></div>
-            <h2 >E-BOOK LIBRARY</h2>
-            <div class="s"></div>
-        </div>
-        <nav>
-            <ul>
-                <li>
-                    <a href="index.html" class="active">Home</a>
-
-                </li>
-                <li>
-                    <a href="login.html">Login</a>
-                </li>
-                <li>
-                    <a href="register.html">register</a>
-                    </li>
-
-                        <li>
-                    <a href="cart.html">cart</a>
-                    </li>
-                    <li>
-                    <a href="catalog.html">catalog</a>
-                    </li>
-        </nav>
-
-        
-
-
-    </header>
-    <section class="hero">
-        <div>
-            <h1>Welcome</h1>
-            <p>manage and read e books online</p>
-            <a class="btn" href="catalog.html">explore</a>
-        </div>
-        <img src="./images/download.jpg">
-
-    </section>
-    <section class="features">
-        <div class="card">HTML</div>
-        <div class="card">CSS 3 Flexbox></div>
-        <div class="card">Grid</div>
-    </section>
-    <footer>E book management system</footer>
-    <footer>Srinithya-25wh1a05q5</footer>
-
-
+    <h1> weather forecast graph</h1>
+    <input type="text" id="cityInput" placeholder="enter city name">
+    <button id="getweatherBtn">Get weather</button>
+    <p id="message"></p>
+    <canvas id="weatherchart" width="600" height="100"></canvas>
+    <script src="app.js"></script>
     
 </body>
 </html>
