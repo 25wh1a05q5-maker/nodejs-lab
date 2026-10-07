@@ -1,86 +1,89 @@
-// PASTE YOUR FREE API KEY FROM https://openweathermap.org/api HERE:
-//const API_KEY = "PASTE_YOUR_OPENWEATHERMAP_API_KEY_HERE";
-  const API_KEY = "17a7e1cc3e0a9e0f9304bd814e97e23a";
+const express = require("express");
+const mysql = require("mysql2/promise");
 
-const cityInput = document.getElementById("cityInput");
-const getWeatherBtn = document.getElementById("getWeatherBtn");
-const messageBox = document.getElementById("message");
+const app = express();
 
-let weatherChart = null; // will hold our chart, so we can redraw it later
+app.use(express.json());
 
-// This runs when the user clicks the "Get Weather" button
-getWeatherBtn.addEventListener("click", () => {
-  const city = cityInput.value.trim();
-
-  if (city === "") {
-    messageBox.textContent = "Please type a city name first.";
-    return;
-  }
-messageBox.textContent = "Loading...";
-  getWeatherData(city); // call our async function below
+const db = mysql.createPool({
+    host: "localhost",
+    user: "root",
+    password: "1234",
+    database: "25wh1a05q5"
 });
 
-// ---- ASYNC FUNCTION: fetch forecast data and draw the graph ----
-async function getWeatherData(city) {
-  try {
-    // Build the API URL. This endpoint gives a 5-day forecast,
-    // with one data point every 3 hours -- perfect for a graph.
-    const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${API_KEY}`;
- // "await" pauses here until the data actually arrives from the internet
-    const response = await fetch(url);
-    const data = await response.json();
+// Test MySQL connection
+db.getConnection()
+    .then((connection) => {
+        console.log("MySQL connected");
+        connection.release();
+    })
+    .catch((error) => {
+        console.log("MySQL failed:", error.message);
+    });
 
-    // If the city name was wrong, OpenWeatherMap sends an error message
-    if (data.cod !== "200") {
-      messageBox.textContent = "City not found. Please check the spelling.";
-      return;
+// Home route
+app.get("/", (req, res) => {
+    res.send("Welcome to Student API");
+});
+
+// GET students
+app.get("/students", async (req, res) => {
+    try {
+        const [rows] = await db.execute("SELECT * FROM STUDENTS");
+        res.json(rows);
+    } catch (error) {
+        res.send("Database error: " + error.message);
     }
+});
 
-    messageBox.textContent = ""; // clear any old message
+// POST student
+app.post("/students", async (req, res) => {
+    try {
+        const { NAME, ROLLNO } = req.body;
 
-    // Pull out just the pieces we need for the graph:
-    // - times (labels for the X axis)
-    // - temperatures (values for the Y axis)
-    const times = data.list.map((entry) => entry.dt_txt.slice(5, 16)); // e.g. "08-15 09:00"
-    const temps = data.list.map((entry) => entry.main.temp);
+        await db.execute(
+            "INSERT INTO STUDENTS (NAME, ROLLNO) VALUES (?, ?)",
+            [NAME, ROLLNO]
+        );
 
-    drawGraph(times, temps, city);
- } catch (error) {
-    // This runs if the internet request itself failed (no wifi, wrong key, etc.)
-    console.log("Something went wrong:", error);
-    messageBox.textContent = "Something went wrong. Check your internet or API key.";
-  }
-}
+        res.send("Student added successfully");
+    } catch (error) {
+        res.send("Database error: " + error.message);
+    }
+});
 
-// ---- Draws (or redraws) the line graph using Chart.js ----
-function drawGraph(labels, temperatures, city) {
-  const ctx = document.getElementById("weatherChart").getContext("2d");
+// UPDATE student
+app.put("/students/:id", async (req, res) => {
+    try {
+        const { NAME, ROLLNO } = req.body;
 
-  // If a chart already exists from a previous search, remove it first
-  if (weatherChart !== null) {
-    weatherChart.destroy();
-  }
+        await db.execute(
+            "UPDATE STUDENTS SET NAME = ?, ROLLNO = ? WHERE ID = ?",
+            [NAME, ROLLNO, req.params.id]
+        );
 
-  weatherChart = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: labels, // X axis: date/time
-      datasets: [
-        {
-          label: `Temperature in ${city} (°C)`,
-          data: temperatures, // Y axis: temperature values
-          borderColor: "blue",
-          fill: false,
-          tension: 0.2,
-           },
-      ],
-    },
-    options: {
-      responsive: true,
-      scales: {
-        x: { title: { display: true, text: "Date / Time" } },
-        y: { title: { display: true, text: "Temperature (°C)" } },
-      },
-    },
-  });
-}
+        res.send("Database updated successfully");
+    } catch (error) {
+        res.send("Database error: " + error.message);
+    }
+});
+
+// DELETE student
+app.delete("/students/:id", async (req, res) => {
+    try {
+        await db.execute(
+            "DELETE FROM STUDENTS WHERE ID = ?",
+            [req.params.id]
+        );
+
+        res.send("Database deleted successfully");
+    } catch (error) {
+        res.send("Database error: " + error.message);
+    }
+});
+
+// Start server
+app.listen(3000, () => {
+    console.log("Server is running on port 3000");
+});
