@@ -1,89 +1,82 @@
+
 const express = require("express");
-const mysql = require("mysql2/promise");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 
 app.use(express.json());
 
-const db = mysql.createPool({
-    host: "localhost",
-    user: "root",
-    password: "1234",
-    database: "25wh1a05q5"
-});
+const secretKey = "student123";
 
-// Test MySQL connection
-db.getConnection()
-    .then((connection) => {
-        console.log("MySQL connected");
-        connection.release();
-    })
-    .catch((error) => {
-        console.log("MySQL failed:", error.message);
-    });
+let students = [
+    { id: 1, name: "Anil", age: 50 },
+    { id: 2, name: "Kumar", age: 51 }
+];
 
-// Home route
-app.get("/", (req, res) => {
-    res.send("Welcome to Student API");
-});
+// LOGIN - Generate JWT token
+app.post("/login", (req, res) => {
+    const { username, password } = req.body;
 
-// GET students
-app.get("/students", async (req, res) => {
-    try {
-        const [rows] = await db.execute("SELECT * FROM STUDENTS");
-        res.json(rows);
-    } catch (error) {
-        res.send("Database error: " + error.message);
-    }
-});
-
-// POST student
-app.post("/students", async (req, res) => {
-    try {
-        const { NAME, ROLLNO } = req.body;
-
-        await db.execute(
-            "INSERT INTO STUDENTS (NAME, ROLLNO) VALUES (?, ?)",
-            [NAME, ROLLNO]
+    if (username === "admin" && password === "1234") {
+        const token = jwt.sign(
+            { username: username },
+            secretKey,
+            { expiresIn: "1h" }
         );
 
-        res.send("Student added successfully");
-    } catch (error) {
-        res.send("Database error: " + error.message);
+        res.json({ token: token });
+    } else {
+        res.status(401).send("Invalid username or password");
     }
 });
 
-// UPDATE student
-app.put("/students/:id", async (req, res) => {
+// JWT verification middleware
+function verifyToken(req, res, next) {
+    const token = req.headers.authorization;
+
+    if (!token) {
+        return res.status(401).send("Token required");
+    }
+
     try {
-        const { NAME, ROLLNO } = req.body;
+        const jwtToken = token.split(" ")[1];
+        jwt.verify(jwtToken, secretKey);
+        next();
+    } catch {
+        res.status(401).send("Invalid token");
+    }
+}
 
-        await db.execute(
-            "UPDATE STUDENTS SET NAME = ?, ROLLNO = ? WHERE ID = ?",
-            [NAME, ROLLNO, req.params.id]
-        );
+// GET - Read all students
+app.get("/students", verifyToken, (req, res) => {
+    res.json(students);
+});
 
-        res.send("Database updated successfully");
-    } catch (error) {
-        res.send("Database error: " + error.message);
+// POST - Add a student
+app.post("/students", verifyToken, (req, res) => {
+    students.push(req.body);
+    res.send("Student added successfully");
+});
+
+// PUT - Update a student
+app.put("/students/:id", verifyToken, (req, res) => {
+    let student = students.find(s => s.id == req.params.id);
+
+    if (student) {
+        student.name = req.body.name;
+        student.age = req.body.age;
+        res.send("Student updated successfully");
+    } else {
+        res.send("Student not found");
     }
 });
 
-// DELETE student
-app.delete("/students/:id", async (req, res) => {
-    try {
-        await db.execute(
-            "DELETE FROM STUDENTS WHERE ID = ?",
-            [req.params.id]
-        );
-
-        res.send("Database deleted successfully");
-    } catch (error) {
-        res.send("Database error: " + error.message);
-    }
+// DELETE - Delete a student
+app.delete("/students/:id", verifyToken, (req, res) => {
+    students = students.filter(s => s.id != req.params.id);
+    res.send("Student deleted successfully");
 });
 
-// Start server
 app.listen(3000, () => {
-    console.log("Server is running on port 3000");
+    console.log("Server running on http://localhost:3000");
 });
